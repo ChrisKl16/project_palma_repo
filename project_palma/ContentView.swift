@@ -9,40 +9,19 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
-    @AppStorage("user") private var userData: Data?
+    @AppStorage("onboardingComplete") private var hasCompletedOnboarding: Bool = false
     @State private var isShowingNotification: Bool = false
     @State private var isShowingSettings: Bool = false
-    @State private var hasCompletedOnboarding: Bool = false
-    @State private var isLoading = true
     
     var body: some View {
         ZStack {
-            if !hasCompletedOnboarding && !isLoading {
+            if !hasCompletedOnboarding {
                 OnboardingView()
                     .transition(.opacity)
-            } else if !isLoading {
-                mainContent
             } else {
-                loadingView
+                mainContent
             }
         }
-        .onAppear {
-            loadOnboardingStatus()
-        }
-    }
-    
-    private func loadOnboardingStatus() {
-        if let userData = userData {
-            do {
-                let user = try JSONDecoder().decode(User.self, from: userData)
-                hasCompletedOnboarding = user.hasCompletedOnboarding
-            } catch {
-                hasCompletedOnboarding = false
-            }
-        } else {
-            hasCompletedOnboarding = false
-        }
-        isLoading = false
     }
     
     var mainContent: some View {

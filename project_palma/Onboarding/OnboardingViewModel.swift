@@ -10,6 +10,7 @@ import SwiftUI
 final class OnboardingViewModel: ObservableObject {
     
     @AppStorage("user") private var userData: Data?
+    @AppStorage("onboardingComplete") private var onboardingComplete: Bool = false
     
     @Published var currentStep: OnboardingStep = .welcome
     @Published var user = User()
@@ -80,6 +81,7 @@ final class OnboardingViewModel: ObservableObject {
     
     func completeOnboarding() {
         user.hasCompletedOnboarding = true
+        onboardingComplete = true
         saveUser()
     }
     

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct OnboardingView: View {
     @StateObject private var viewModel = OnboardingViewModel()
+    @AppStorage("onboardingComplete") private var onboardingComplete: Bool = false
+    @State private var showSuccessOverlay = false
     
     var body: some View {
         ZStack {
@@ -51,7 +53,7 @@ struct OnboardingView: View {
                         }
                     }
                     
-                    Button(action: viewModel.moveToNextStep) {
+                    Button(action: handleNextStep) {
                         Text(viewModel.currentStep == .privacySettings ? "Complete" : "Next")
                             .font(.headline)
                             .foregroundColor(.white)
@@ -63,21 +65,63 @@ struct OnboardingView: View {
                 }
                 .padding()
             }
+            
+            if showSuccessOverlay {
+                completionOverlay
+                    .transition(.opacity)
+                    .zIndex(2)
+            }
         }
         .alert(item: $viewModel.alertItem) { alertItem in
             Alert(title: alertItem.title, message: alertItem.message, dismissButton: alertItem.dismissButton)
         }
     }
-}
-
-// Step 1 - Welcome
-struct OnboardingWelcomeView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
     
-    var body: some View {
-        VStack(spacing: 24) {
-            Text("Welcome to Palma")
-                .font(.title)
+    private var completionOverlay: some View {
+        Color.black.opacity(0.35)
+            .ignoresSafeArea()
+            .overlay {
+                VStack(spacing: 20) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color("BrandPrimaryColor"))
+                        .clipShape(Circle())
+                    
+                    Text("Onboarding Complete")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    
+                    Text("Welcome to Palma! Your profile has been saved.")
+                        .font(.body)
+                        .foregroundColor(.white.opacity(0.85))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                .padding(32)
+                .background(Color("BrandPrimaryColor").opacity(0.95))
+                .cornerRadius(24)
+                .shadow(radius: 20)
+            }
+    }
+    
+    private func handleNextStep() {
+        if viewModel.currentStep == .privacySettings {
+            guard viewModel.isStep2Valid else {
+                viewModel.alertItem = AlertContext.invalidForm
+                return
+            }
+            viewModel.completeOnboarding()
+            withAnimation {
+                showSuccessOverlay = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                onboardingComplete = true
+            }
+        } else {
+            viewModel.moveToNextStep()
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
             
