@@ -122,27 +122,38 @@ struct OnboardingView: View {
             }
         } else {
             viewModel.moveToNextStep()
+        }
+    }
+
+// Step 1 - Welcome
+struct OnboardingWelcomeView: View {
+    @ObservedObject var viewModel: OnboardingViewModel
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Text("Welcome to Palma")
+                .font(.title)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
-            
+
             Text("Discover local events and connect with like-minded people in your city.")
                 .font(.body)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
-            
+
             VStack(spacing: 16) {
                 HStack(spacing: 12) {
                     Image(systemName: "mappin.circle.fill")
                         .foregroundColor(Color("BrandPrimaryColor"))
                     Text("Find events near you")
                 }
-                
+
                 HStack(spacing: 12) {
                     Image(systemName: "person.2.circle.fill")
                         .foregroundColor(Color("BrandPrimaryColor"))
                     Text("Connect with others")
                 }
-                
+
                 HStack(spacing: 12) {
                     Image(systemName: "calendar.badge.checkmark")
                         .foregroundColor(Color("BrandPrimaryColor"))
@@ -156,6 +167,7 @@ struct OnboardingView: View {
         }
         .padding()
     }
+}
 }
 
 // Step 2 - Interests & Group Preference
