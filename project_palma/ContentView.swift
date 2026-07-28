@@ -9,10 +9,43 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
+    @AppStorage("user") private var userData: Data?
     @State private var isShowingNotification: Bool = false
     @State private var isShowingSettings: Bool = false
-
+    @State private var hasCompletedOnboarding: Bool = false
+    @State private var isLoading = true
+    
     var body: some View {
+        ZStack {
+            if !hasCompletedOnboarding && !isLoading {
+                OnboardingView()
+                    .transition(.opacity)
+            } else if !isLoading {
+                mainContent
+            } else {
+                loadingView
+            }
+        }
+        .onAppear {
+            loadOnboardingStatus()
+        }
+    }
+    
+    private func loadOnboardingStatus() {
+        if let userData = userData {
+            do {
+                let user = try JSONDecoder().decode(User.self, from: userData)
+                hasCompletedOnboarding = user.hasCompletedOnboarding
+            } catch {
+                hasCompletedOnboarding = false
+            }
+        } else {
+            hasCompletedOnboarding = false
+        }
+        isLoading = false
+    }
+    
+    var mainContent: some View {
         ZStack {
             Background(BackgroundColor: .white)
             
@@ -63,11 +96,29 @@ struct ContentView: View {
             }
         }
     }
+    
+    var loadingView: some View {
+        ZStack {
+            Background(BackgroundColor: .white)
+            
+            VStack {
+                ProgressView()
+                    .scaleEffect(1.5)
+                Text("Loading...")
+                    .font(.headline)
+                    .foregroundColor(.gray)
+                    .padding(.top)
+            }
+        }
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .onAppear {
+                // Preview should load onboarding
+            }
     }
 }
 
