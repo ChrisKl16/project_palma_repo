@@ -25,7 +25,7 @@ struct ProfileView: View {
                     TextField("Country", text: $viewModel.user.country)
                     DatePicker("Birthday", selection: $viewModel.user.birthdate,
                                displayedComponents: .date)
-                    TextField("Interests", text: $viewModel.user.interests)
+                    TextField("Interests", text: $viewModel.interestsText)
                     TextField("Bio", text: $viewModel.user.bio)
                     
                     Button {

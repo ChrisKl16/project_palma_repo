@@ -147,7 +147,7 @@ struct OnboardingInterestsView: View {
             }
             
             Divider()
-                .padding(.vertical(8))
+                .padding(.vertical, 8)
             
             Text("Are you looking for events...")
                 .font(.headline)
@@ -222,7 +222,7 @@ struct OnboardingPrivacyView: View {
                     .padding(.horizontal)
                 
                 Divider()
-                    .padding(.vertical(8))
+                    .padding(.vertical, 8)
                 
                 Toggle("Show Event Attendance", isOn: $viewModel.user.showAttendanceInPublic)
                     .padding()
