@@ -152,16 +152,54 @@ struct OnboardingInterestsView: View {
             Text("Are you looking for events...")
                 .font(.headline)
             
-            Picker("Group Preference", selection: $viewModel.user.groupPreference) {
-                Text(GroupPreference.alone.rawValue).tag(GroupPreference.alone)
-                Text(GroupPreference.couple.rawValue).tag(GroupPreference.couple)
-                Text(GroupPreference.smallGroup.rawValue).tag(GroupPreference.smallGroup)
-                Text(GroupPreference.largeGroup.rawValue).tag(GroupPreference.largeGroup)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: 12) {
+                ForEach(GroupPreference.allCases, id: \.self) { preference in
+                    PreferenceTagView(
+                        title: preference.rawValue,
+                        isSelected: viewModel.selectedGroupPreferences.contains(preference)
+                    ) {
+                        if viewModel.selectedGroupPreferences.contains(preference) {
+                            viewModel.selectedGroupPreferences.remove(preference)
+                        } else {
+                            viewModel.selectedGroupPreferences.insert(preference)
+                        }
+                    }
+                }
             }
-            .pickerStyle(.segmented)
             .padding(.top, 8)
         }
         .padding()
+    }
+}
+
+struct PreferenceTagView: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                }
+                Text(title)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(isSelected ? .white : Color("BrandPrimaryColor"))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(isSelected ? Color("BrandPrimaryColor") : Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color("BrandPrimaryColor"), lineWidth: isSelected ? 0 : 1)
+            )
+            .cornerRadius(12)
+            .shadow(color: isSelected ? Color("BrandPrimaryColor").opacity(0.2) : .clear, radius: 3, x: 0, y: 2)
+        }
     }
 }
 

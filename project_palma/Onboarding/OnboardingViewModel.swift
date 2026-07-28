@@ -14,6 +14,7 @@ final class OnboardingViewModel: ObservableObject {
     @Published var currentStep: OnboardingStep = .welcome
     @Published var user = User()
     @Published var selectedInterests: Set<String> = []
+    @Published var selectedGroupPreferences: Set<GroupPreference> = []
     @Published var selectedCountry: String = ""
     @Published var alertItem: AlertItem?
     
@@ -32,12 +33,13 @@ final class OnboardingViewModel: ObservableObject {
     ]
     
     var isStep1Valid: Bool {
-        !selectedInterests.isEmpty && !selectedCountry.isEmpty
+        !selectedInterests.isEmpty && !selectedGroupPreferences.isEmpty
     }
     
     var isStep2Valid: Bool {
         !user.firstName.isEmpty && !user.lastName.isEmpty && 
-        !user.email.isEmpty && user.email.isValidEmail
+        !user.email.isEmpty && user.email.isValidEmail &&
+        !selectedCountry.isEmpty
     }
     
     func moveToNextStep() {
@@ -50,7 +52,7 @@ final class OnboardingViewModel: ObservableObject {
                 return
             }
             user.interests = Array(selectedInterests)
-            user.country = selectedCountry
+            user.groupPreferences = Array(selectedGroupPreferences)
             currentStep = .profileCreation
         case .profileCreation:
             guard isStep2Valid else {
@@ -96,6 +98,7 @@ final class OnboardingViewModel: ObservableObject {
         do {
             user = try JSONDecoder().decode(User.self, from: userData)
             selectedInterests = Set(user.interests)
+            selectedGroupPreferences = Set(user.groupPreferences)
             selectedCountry = user.country
         } catch {
             alertItem = AlertContext.invalidUserData

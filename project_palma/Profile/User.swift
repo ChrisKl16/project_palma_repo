@@ -18,7 +18,7 @@ struct User: Codable {
     var bio = ""
     var hasCompletedOnboarding = false
     var userType: UserType = .individual
-    var groupPreference: GroupPreference = .alone
+    var groupPreferences: [GroupPreference] = []
     var profilePictures: [String] = []  // Store as base64 strings or file paths
     var isPublicProfile = true
     var showAttendanceInPublic = true
@@ -29,7 +29,7 @@ enum UserType: String, Codable {
     case business
 }
 
-enum GroupPreference: String, Codable {
+enum GroupPreference: String, Codable, CaseIterable {
     case alone = "Alone"
     case couple = "Couple"
     case smallGroup = "Small Group (3-5)"
