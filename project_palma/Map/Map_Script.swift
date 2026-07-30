@@ -184,8 +184,8 @@ struct project_palma_map: View {
                         .padding()
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
-                if let creationNotice {
-                    Text(creationNotice)
+                if let notice = creationNotice {
+                    Text(notice)
                         .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
@@ -196,7 +196,7 @@ struct project_palma_map: View {
                         .onAppear {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                                 withAnimation {
-                                    creationNotice = nil
+                                    self.creationNotice = nil
                                 }
                             }
                         }
