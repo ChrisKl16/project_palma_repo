@@ -42,19 +42,16 @@ struct project_palma_map: View {
         center: CLLocationCoordinate2D(latitude: 52.5200, longitude: 13.4050),
         span: MKCoordinateSpan(latitudeDelta: 0.14, longitudeDelta: 0.14)
     )
-    @State private var events: [MapEvent] = [
-        MapEvent(
-            title: "Sunset Meetup",
-            description: "Lockeres Treffen im Park für neue Kontakte.",
-            date: Date().addingTimeInterval(60 * 60 * 24),
-            coordinate: CLLocationCoordinate2D(latitude: 52.5175, longitude: 13.4030),
-            category: "Meetup",
-            isPublic: true
-        )
-    ]
-    @State private var isShowingCreateEvent = false
+    @State private var selectionRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 52.5200, longitude: 13.4050),
+        span: MKCoordinateSpan(latitudeDelta: 0.14, longitudeDelta: 0.14)
+    )
+    @State private var events: [MapEvent] = []
+    @State private var isShowingCreateEventForm = false
+    @State private var isShowingLocationPicker = false
     @State private var draft = MapEventDraft()
     @State private var selectedEvent: MapEvent?
+    @State private var creationNotice: String?
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -89,10 +86,7 @@ struct project_palma_map: View {
             }
             .mapStyle(.standard(elevation: .realistic))
 
-            Button(action: {
-                draft = MapEventDraft()
-                isShowingCreateEvent = true
-            }) {
+            Button(action: startEventCreation) {
                 Label("Event erstellen", systemImage: "plus.circle.fill")
                     .padding()
                     .background(.regularMaterial)
@@ -102,7 +96,7 @@ struct project_palma_map: View {
             .padding()
             .accessibilityIdentifier("createEventButton")
         }
-        .sheet(isPresented: $isShowingCreateEvent) {
+        .sheet(isPresented: $isShowingCreateEventForm) {
             NavigationView {
                 Form {
                     Section("Event") {
@@ -116,24 +110,67 @@ struct project_palma_map: View {
                         }
                         Toggle("Öffentlich", isOn: $draft.isPublic)
                     }
-
-                    Section("Standort") {
-                        Text("Koordinaten der Kartenmitte")
-                        Text("Lat: \(region.center.latitude, format: .number.precision(.fractionLength(4)))")
-                        Text("Lon: \(region.center.longitude, format: .number.precision(.fractionLength(4)))")
-                    }
                 }
                 .navigationTitle("Neues Event")
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Abbrechen") {
-                            isShowingCreateEvent = false
+                            isShowingCreateEventForm = false
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Erstellen") {
-                            addEvent()
-                            isShowingCreateEvent = false
+                        Button("Weiter") {
+                            prepareLocationSelection()
+                        }
+                        .disabled(draft.title.isEmpty)
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $isShowingLocationPicker) {
+            NavigationView {
+                ZStack {
+                    Map(
+                        coordinateRegion: $selectionRegion,
+                        interactionModes: .all,
+                        showsUserLocation: true
+                    )
+                    .mapStyle(.standard(elevation: .realistic))
+
+                    VStack {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.system(size: 44))
+                            .foregroundColor(.red)
+                            .shadow(radius: 4)
+                            .padding(.top, 40)
+                        Spacer()
+                    }
+                    .allowsHitTesting(false)
+
+                    VStack {
+                        Text("Verschiebe die Karte, um den genauen Standort festzulegen.")
+                            .font(.subheadline)
+                            .multilineTextAlignment(.center)
+                            .padding(12)
+                            .background(.regularMaterial)
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+                        Spacer()
+                    }
+                    .padding(.top)
+                }
+                .navigationTitle("Standort wählen")
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Zurück") {
+                            isShowingLocationPicker = false
+                            isShowingCreateEventForm = true
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Bestätigen") {
+                            addEvent(at: selectionRegion.center)
+                            isShowingLocationPicker = false
                         }
                         .disabled(draft.title.isEmpty)
                     }
@@ -141,24 +178,59 @@ struct project_palma_map: View {
             }
         }
         .overlay(alignment: .top) {
-            if let selectedEvent {
-                eventDetailView(selectedEvent)
-                    .padding()
-                    .transition(.move(edge: .top).combined(with: .opacity))
+            VStack {
+                if let selectedEvent {
+                    eventDetailView(selectedEvent)
+                        .padding()
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+                if let creationNotice {
+                    Text(creationNotice)
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(.regularMaterial)
+                        .cornerRadius(16)
+                        .shadow(radius: 8)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                withAnimation {
+                                    creationNotice = nil
+                                }
+                            }
+                        }
+                }
             }
+            .padding(.top, 16)
         }
     }
 
-    private func addEvent() {
+    private func startEventCreation() {
+        draft = MapEventDraft()
+        selectionRegion = region
+        isShowingCreateEventForm = true
+    }
+
+    private func prepareLocationSelection() {
+        selectionRegion = region
+        isShowingCreateEventForm = false
+        isShowingLocationPicker = true
+    }
+
+    private func addEvent(at coordinate: CLLocationCoordinate2D) {
         let event = MapEvent(
             title: draft.title,
             description: draft.description,
             date: draft.date,
-            coordinate: region.center,
+            coordinate: coordinate,
             category: draft.category,
             isPublic: draft.isPublic
         )
         events.append(event)
+        selectedEvent = event
+        region.center = coordinate
+        creationNotice = "Event „\(event.title)“ wurde erstellt."
     }
 
     @ViewBuilder
