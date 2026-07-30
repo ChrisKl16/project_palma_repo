@@ -16,6 +16,17 @@ struct MapEvent: Identifiable, Equatable {
     let coordinate: CLLocationCoordinate2D
     let category: String
     let isPublic: Bool
+
+    static func == (lhs: MapEvent, rhs: MapEvent) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.title == rhs.title &&
+        lhs.description == rhs.description &&
+        lhs.date == rhs.date &&
+        lhs.category == rhs.category &&
+        lhs.isPublic == rhs.isPublic &&
+        lhs.coordinate.latitude == rhs.coordinate.latitude &&
+        lhs.coordinate.longitude == rhs.coordinate.longitude
+    }
 }
 
 struct MapEventDraft {
