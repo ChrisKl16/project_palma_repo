@@ -11,6 +11,7 @@ final class ProfileViewModel: ObservableObject {
     
     @AppStorage("user") private var userData: Data?
     @Published var user = User()
+    @Published var interestsText: String = ""
     
     @Published var alertItem: AlertItem?
     
@@ -30,6 +31,10 @@ final class ProfileViewModel: ObservableObject {
     
     func saveChanges() {
         guard isValidForm else { return }
+        user.interests = interestsText
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
         
         do {
             let data = try JSONEncoder().encode(user)
@@ -46,6 +51,7 @@ final class ProfileViewModel: ObservableObject {
         
         do {
             user = try JSONDecoder().decode(User.self, from: userData)
+            interestsText = user.interests.joined(separator: ", ")
         } catch {
             alertItem = AlertContext.invalidUserData
         }

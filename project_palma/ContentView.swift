@@ -9,10 +9,22 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
+    @AppStorage("onboardingComplete") private var hasCompletedOnboarding: Bool = false
     @State private var isShowingNotification: Bool = false
     @State private var isShowingSettings: Bool = false
-
+    
     var body: some View {
+        ZStack {
+            if !hasCompletedOnboarding {
+                OnboardingView()
+                    .transition(.opacity)
+            } else {
+                mainContent
+            }
+        }
+    }
+    
+    var mainContent: some View {
         ZStack {
             Background(BackgroundColor: .white)
             
@@ -63,11 +75,29 @@ struct ContentView: View {
             }
         }
     }
+    
+    var loadingView: some View {
+        ZStack {
+            Background(BackgroundColor: .white)
+            
+            VStack {
+                ProgressView()
+                    .scaleEffect(1.5)
+                Text("Loading...")
+                    .font(.headline)
+                    .foregroundColor(.gray)
+                    .padding(.top)
+            }
+        }
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .onAppear {
+                // Preview should load onboarding
+            }
     }
 }
 

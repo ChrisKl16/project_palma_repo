@@ -51,4 +51,8 @@ struct AlertContext {
     static let invalidUserData = AlertItem(title: Text("Profile Error"),
                                               message: Text("There was an error saving or retrieving your profile"),
                                               dismissButton: .default(Text("OK")))
+    
+    static let incompleteOnboarding = AlertItem(title: Text("Incomplete"),
+                                              message: Text("Please complete all required fields before proceeding"),
+                                              dismissButton: .default(Text("OK")))
 }
