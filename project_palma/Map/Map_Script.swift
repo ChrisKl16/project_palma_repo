@@ -138,11 +138,11 @@ struct project_palma_map: View {
                     .mapStyle(.standard(elevation: .realistic))
 
                     VStack {
+                        Spacer()
                         Image(systemName: "mappin.circle.fill")
                             .font(.system(size: 44))
                             .foregroundColor(.red)
                             .shadow(radius: 4)
-                            .padding(.top, 40)
                         Spacer()
                     }
                     .allowsHitTesting(false)
@@ -158,6 +158,7 @@ struct project_palma_map: View {
                         Spacer()
                     }
                     .padding(.top)
+                    .allowsHitTesting(false)
                 }
                 .navigationTitle("Standort wählen")
                 .toolbar {
